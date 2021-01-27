@@ -1,9 +1,12 @@
 package com.mcubes.writer;
 
+import com.mcubes.model.PieChart;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xddf.usermodel.chart.*;
+import org.apache.poi.xssf.usermodel.*;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -13,7 +16,7 @@ import java.util.List;
 public class ExcelWriter {
 
     private enum DataType {
-        BOOLEAN, STRING, INTEGER, FLOAT, DATE
+        BOOLEAN, STRING, INTEGER, DOUBLE, DATE
     }
 
     private FileOutputStream fos;
@@ -25,9 +28,12 @@ public class ExcelWriter {
     private List<Boolean[]> booleanData;
     private List<String[]> stringData;
     private List<Integer[]> integerData;
-    private List<Float[]> floatData;
+    private List<Double[]> doubleData;
     private List<Date[]> dateData;
     private DataType selectedType;
+
+    private PieChart pieChart;
+
 
     public ExcelWriter(File file){
         this(file, null);
@@ -84,9 +90,9 @@ public class ExcelWriter {
         this.selectedType = DataType.INTEGER;
     }
 
-    public void setFloatData(List<Float[]> floatData) {
-        this.floatData = floatData;
-        this.selectedType = DataType.FLOAT;
+    public void setDoubleData(List<Double[]> doubleData) {
+        this.doubleData = doubleData;
+        this.selectedType = DataType.DOUBLE;
     }
 
     public void setDateData(List<Date[]> dateData) {
@@ -97,6 +103,8 @@ public class ExcelWriter {
     public void write() throws IOException {
         this.createHeadersRow();
         this.setData();
+        if (this.pieChart != null)
+            createPieChart();
         this.workbook.write(fos);
         this.workbook.close();
     }
@@ -149,10 +157,10 @@ public class ExcelWriter {
                             }
                         }
                         break;
-                    case FLOAT:
-                        for (int i = 0; i < floatData.size(); i++) {
+                    case DOUBLE:
+                        for (int i = 0; i < doubleData.size(); i++) {
                             row = sheet.createRow(i + 1);
-                            Float[] dataRow = floatData.get(i);
+                            Double[] dataRow = doubleData.get(i);
                             for (int j = 0; j < dataRow.length; j++) {
                                 cell = row.createCell(j);
                                 cell.setCellValue(dataRow[j]);
@@ -174,6 +182,30 @@ public class ExcelWriter {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void createPieChart(String title, boolean _3D){
+        this.pieChart = new PieChart(title, 0, 0, 10, 20, _3D);
+    }
+
+    public void createPieChart(String title, int startCol, int startRow, int endCol, int endRow, boolean _3D){
+        this.pieChart = new PieChart(title, startCol, startRow, endCol, endRow, _3D);
+    }
+
+    private void createPieChart(){
+        XSSFDrawing drawing = sheet.createDrawingPatriarch();
+        XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, pieChart.getStartCol(), pieChart.getStartRow(), pieChart.getEndCol(), pieChart.getEndRow());
+        XSSFChart chart = drawing.createChart(anchor);
+        chart.setTitleText(pieChart.getTitle());
+        chart.setTitleOverlay(false);
+        XDDFChartLegend legend = chart.getOrAddLegend();
+        legend.setPosition(LegendPosition.TOP_RIGHT);
+        XDDFDataSource<String> categoryDataSource = XDDFDataSourcesFactory.fromStringCellRange(sheet, new CellRangeAddress(0, 0, 0, headers.length-1));
+        XDDFNumericalDataSource<Double> values = XDDFDataSourcesFactory.fromNumericCellRange(sheet, new CellRangeAddress(1, 1, 0, headers.length-1));
+        XDDFChartData data = chart.createData(pieChart.is_3D() ? ChartTypes.PIE3D : ChartTypes.PIE, null, null);
+        data.setVaryColors(true);
+        data.addSeries(categoryDataSource, values);
+        chart.plot(data);
     }
 
 }
