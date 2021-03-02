@@ -1,6 +1,6 @@
 package com.mcubes.model;
 
-public class BasicChart {
+public abstract class BasicChart {
 
     private String title;
     private int startCol;

@@ -1,7 +1,9 @@
 package com.mcubes.writer;
 
+import com.mcubes.model.LineChart;
 import com.mcubes.model.PieChart;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xddf.usermodel.chart.*;
@@ -10,6 +12,7 @@ import org.apache.poi.xssf.usermodel.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -33,6 +36,7 @@ public class ExcelWriter {
     private DataType selectedType;
 
     private PieChart pieChart;
+    private LineChart lineChart;
 
 
     public ExcelWriter(File file){
@@ -105,6 +109,8 @@ public class ExcelWriter {
         this.setData();
         if (this.pieChart != null)
             createPieChart();
+        if (this.lineChart != null)
+            createLineChart();
         this.workbook.write(fos);
         this.workbook.close();
     }
@@ -205,6 +211,41 @@ public class ExcelWriter {
         XDDFChartData data = chart.createData(pieChart.is_3D() ? ChartTypes.PIE3D : ChartTypes.PIE, null, null);
         data.setVaryColors(true);
         data.addSeries(categoryDataSource, values);
+        chart.plot(data);
+    }
+
+
+    public void createLineChart(String title, boolean _3D){
+        this.lineChart = new LineChart(title, 0, 0, 10, 20, _3D);
+    }
+
+    public void createLineChart(String title, int startCol, int startRow, int endCol, int endRow, boolean _3D){
+        this.lineChart = new LineChart(title, startCol, startRow, endCol, endRow, _3D);
+    }
+
+
+    private void createLineChart(){
+
+        XSSFDrawing drawing = sheet.createDrawingPatriarch();
+        ClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, lineChart.getStartCol(),
+                lineChart.getStartRow(), lineChart.getEndCol(), lineChart.getEndRow());
+        XSSFChart chart = drawing.createChart(anchor);
+        chart.setTitleText(lineChart.getTitle());
+        XDDFChartLegend legend = chart.getOrAddLegend();
+        legend.setPosition(LegendPosition.TOP_RIGHT);
+
+
+        XDDFCategoryAxis categoryAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+        XDDFValueAxis valueAxis = chart.createValueAxis(AxisPosition.LEFT);
+        valueAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+
+        XDDFChartData data = chart.createData(lineChart.is_3D() ? ChartTypes.LINE3D : ChartTypes.LINE, categoryAxis, valueAxis);
+        data.setVaryColors(true);
+        XDDFDataSource<String> x = XDDFDataSourcesFactory.fromStringCellRange(sheet, new CellRangeAddress(0, 0, 0, headers.length - 1));
+        for (int i=1; i<integerData.size(); i++) {
+            XDDFNumericalDataSource<Double> y = XDDFDataSourcesFactory.fromNumericCellRange(sheet,  new CellRangeAddress(i, i, 0, headers.length - 1));
+            data.addSeries(x, y);
+        }
         chart.plot(data);
     }
 
