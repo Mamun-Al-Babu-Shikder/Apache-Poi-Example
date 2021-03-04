@@ -19,7 +19,7 @@ import org.openxmlformats.schemas.drawingml.x2006.chart.CTStrRef;
 
 import org.apache.poi.xssf.usermodel.DefaultIndexedColorMap;
 
-public class DoughnutChart {
+public class DoughnutChart2 {
 
     public static void main(String[] args) throws Exception {
         Workbook wb = new XSSFWorkbook();

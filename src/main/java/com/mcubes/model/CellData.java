@@ -1,12 +1,15 @@
 package com.mcubes.model;
 
+import com.mcubes.chart.Chart;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
+
+import java.awt.*;
 
 public class CellData {
 
     public static enum DataType {
-        BLANK, BOOLEAN, DOUBLE, STRING, CHART
+        BLANK, STRING, CHART
     }
 
     private int row;
@@ -14,19 +17,58 @@ public class CellData {
     private int rowspan;
     private int colspan;
     private boolean bold;
+    private Color fontColor;
+    private Color cellColor;
     private HorizontalAlignment horizontalAlignment;
     private VerticalAlignment verticalAlignment;
     private String stringValue;
-    private boolean booleanValue;
-    private double doubleValue;
+    //private boolean booleanValue;
+    //private double doubleValue;
     private DataType dataType = DataType.BLANK;
     private String formula;
     private String format;
+    private Chart chart;
 
+
+    public CellData(int row, int column, String stringValue, boolean bold, HorizontalAlignment horizontalAlignment,
+                    int colspan, Color fontColor, Color cellColor,  String format) {
+        this.row = row;
+        this.column = column;
+        this.colspan = colspan;
+        this.bold = bold;
+        this.fontColor = fontColor;
+        this.cellColor = cellColor;
+        this.horizontalAlignment = horizontalAlignment;
+        this.stringValue = stringValue;
+        this.dataType = DataType.STRING;
+        this.format = format;
+    }
+
+    public CellData(int row, int column, String formula, String format, HorizontalAlignment horizontalAlignment,
+                    int colspan, boolean bold, Color fontColor, Color cellColor) {
+        this.row = row;
+        this.column = column;
+        this.colspan = colspan;
+        this.bold = bold;
+        this.fontColor = fontColor;
+        this.cellColor = cellColor;
+        this.horizontalAlignment = horizontalAlignment;
+        this.formula = formula;
+        this.dataType = DataType.BLANK;
+        this.format = format;
+    }
+
+    public CellData(Chart chart) {
+        this.chart = chart;
+        this.dataType = DataType.CHART;
+    }
+
+    /*
     public CellData(int row, int column) {
         this.row = row;
         this.column = column;
     }
+
 
     public CellData(int row, int column, boolean value) {
         this(row, column);
@@ -90,6 +132,24 @@ public class CellData {
         this.colspan = colspan;
     }
 
+    public CellData(int row, int column, String stringValue, boolean boldText, HorizontalAlignment horizontalAlignment,
+                    int colspan, Color fontColor, Color cellColor, String format) {
+        this(row, column, stringValue, boldText, horizontalAlignment, colspan);
+        this.fontColor = fontColor;
+        this.cellColor = cellColor;
+        this.format = format;
+    }
+
+     */
+
+//    public CellData(int row, int column, String stringValue, boolean boldText, HorizontalAlignment horizontalAlignment,
+//                    int colspan, Color fontColor, Color cellColor, String format) {
+//        this(row, column, stringValue, boldText, horizontalAlignment, colspan);
+//        this.fontColor = fontColor;
+//        this.cellColor = cellColor;
+//        this.format = format;
+//    }
+
     public int getRow() {
         return row - 1;
     }
@@ -150,15 +210,15 @@ public class CellData {
         return dataType;
     }
 
-    public void setValue(boolean value) {
-        this.booleanValue = value;
-        this.dataType = DataType.BOOLEAN;
-    }
-
-    public void setValue(double value) {
-        this.doubleValue = value;
-        this.dataType = DataType.DOUBLE;
-    }
+//    public void setValue(boolean value) {
+//        this.booleanValue = value;
+//        this.dataType = DataType.BOOLEAN;
+//    }
+//
+//    public void setValue(double value) {
+//        this.doubleValue = value;
+//        this.dataType = DataType.DOUBLE;
+//    }
 
     public void setValue(String value) {
         this.stringValue = value;
@@ -169,13 +229,13 @@ public class CellData {
         return stringValue;
     }
 
-    public boolean getBooleanValue() {
-        return booleanValue;
-    }
-
-    public double getDoubleValue() {
-        return doubleValue;
-    }
+//    public boolean getBooleanValue() {
+//        return booleanValue;
+//    }
+//
+//    public double getDoubleValue() {
+//        return doubleValue;
+//    }
 
     public String getFormula() {
         return formula;
@@ -191,5 +251,29 @@ public class CellData {
 
     public void setFormat(String format) {
         this.format = format;
+    }
+
+    public Color getFontColor() {
+        return fontColor;
+    }
+
+    public void setFontColor(Color fontColor) {
+        this.fontColor = fontColor;
+    }
+
+    public Color getCellColor() {
+        return cellColor;
+    }
+
+    public void setCellColor(Color cellColor) {
+        this.cellColor = cellColor;
+    }
+
+    public Chart getChart() {
+        return chart;
+    }
+
+    public void setChart(Chart chart) {
+        this.chart = chart;
     }
 }
